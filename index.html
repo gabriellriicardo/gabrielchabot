@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat com Gabriel</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; transform: scale(0.9); }
-            50% { opacity: 1; transform: scale(1); }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
         }
 
         .typing-dot {
-            animation: pulse 1.2s infinite ease-in-out;
+            animation: bounce 0.8s infinite ease-in-out;
         }
 
         @keyframes slideIn {
@@ -22,22 +23,35 @@
         }
 
         .animate-message {
-            animation: slideIn 0.25s ease-out;
+            animation: slideIn 0.2s ease-out;
         }
     </style>
 </head>
 <body class="bg-gray-50 font-['Inter']">
+    <!-- Elemento de áudio oculto -->
+    <audio id="notificationSound" src="notificacao.mp3"></audio>
+
     <div class="max-w-md mx-auto min-h-screen">
         <!-- Cabeçalho -->
         <div class="bg-white p-4 shadow-sm border-b">
             <div class="flex items-center gap-4">
-                <img src="https://avatars.githubusercontent.com/u/95686401?v=4" class="w-10 h-10 rounded-full border-2 border-purple-100">
-                <div>
-                    <h1 class="font-semibold text-gray-800">Gabriel Ricardo</h1>
-                    <div class="flex items-center gap-2 text-sm text-gray-500">
+                <img src="https://avatars.githubusercontent.com/u/79007340?v=4" class="w-10 h-10 rounded-full border-2 border-purple-100">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-semibold text-gray-800">Gabriel Ricardo</h1>
                         <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                        <span>Online • Escada-PE</span>
                     </div>
+                    <div id="typingStatus" class="text-sm text-gray-400 hidden">
+                        <div class="flex items-center gap-1">
+                            <div class="flex space-x-1">
+                                <div class="w-1.5 h-1.5 bg-gray-400 rounded-full typing-dot"></div>
+                                <div class="w-1.5 h-1.5 bg-gray-400 rounded-full typing-dot" style="animation-delay: 0.15s"></div>
+                                <div class="w-1.5 h-1.5 bg-gray-400 rounded-full typing-dot" style="animation-delay: 0.3s"></div>
+                            </div>
+                            <span>digitando...</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500">Online • Escada-PE</div>
                 </div>
             </div>
         </div>
@@ -46,29 +60,12 @@
         <div class="p-4 space-y-6 h-[calc(100vh-160px)] overflow-y-auto" id="chatMessages">
             <!-- Mensagem Inicial -->
             <div class="flex gap-2 animate-message">
-                <img src="https://avatars.githubusercontent.com/u/95686401?v=4" class="w-8 h-8 rounded-full mt-1">
+                <img src="https://avatars.githubusercontent.com/u/79007340?v=4" class="w-8 h-8 rounded-full mt-1">
                 <div class="max-w-[85%]">
                     <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-md border">
                         <p class="text-gray-700">Olá! 👋 Como posso te ajudar hoje?</p>
                     </div>
                     <span class="text-xs text-gray-400 mt-1 block">Agora há pouco</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Indicador de Digitação -->
-        <div id="typingIndicator" class="hidden px-4 pb-2">
-            <div class="flex items-start gap-2">
-                <img src="https://avatars.githubusercontent.com/u/95686401?v=4" class="w-8 h-8 rounded-full">
-                <div class="bg-white px-4 py-2 rounded-2xl shadow-md border">
-                    <div class="flex items-center gap-2 text-gray-500 text-sm">
-                        <div class="flex space-x-1">
-                            <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
-                            <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot" style="animation-delay: 0.2s"></div>
-                            <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot" style="animation-delay: 0.4s"></div>
-                        </div>
-                        <span>Gabriel está digitando...</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -91,20 +88,39 @@
     </div>
 
     <script>
-        const API_KEY = 'AIzaSyAbW9rQgbja14vDUsXuKnjvl2MalzdYg9E'; // ← Substituir pela chave real
+        const API_KEY = 'AIzaSyAbW9rQgbja14vDUsXuKnjvl2MalzdYg9E';
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
-        const typingIndicator = document.getElementById('typingIndicator');
+        const typingStatus = document.getElementById('typingStatus');
+        const notificationSound = document.getElementById('notificationSound');
+
+        // Configurações de velocidade
+        const BASE_TYPING_SPEED = 20;
+        const RANDOM_SPEED_VARIATION = 20;
+
+        // Verifica se a página está visível
+        let isPageVisible = true;
+        document.addEventListener('visibilitychange', () => {
+            isPageVisible = !document.hidden;
+        });
 
         async function loadRules() {
             try {
                 const response = await fetch('dados.txt');
-                if (!response.ok) throw new Error('Arquivo de regras não encontrado');
+                if (!response.ok) throw new Error('Arquivo não encontrado');
                 return await response.text();
             } catch (error) {
-                console.error('Erro ao carregar regras:', error);
-                showError('Problema ao carregar configurações pessoais');
+                console.error('Erro:', error);
+                showError('Problema nas configurações pessoais');
                 return '';
+            }
+        }
+
+        function playNotification() {
+            if (!isPageVisible) {
+                notificationSound.play().catch(error => {
+                    console.log('Reprodução de áudio bloqueada pelo navegador:', error);
+                });
             }
         }
 
@@ -117,11 +133,6 @@
             showTypingIndicator();
 
             try {
-                // Verificações iniciais
-                if (!API_KEY || API_KEY.includes('SUA_API_KEY')) {
-                    throw new Error('Chave de API não configurada');
-                }
-
                 const rules = await loadRules();
                 const chatHistory = getChatHistory();
                 
@@ -144,33 +155,19 @@
                 const data = await response.json();
                 
                 if (!response.ok) {
-                    const errorMsg = data?.error?.message || 'Erro desconhecido da API';
-                    throw new Error(`Erro na API: ${errorMsg}`);
-                }
-
-                if (!data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    throw new Error('Resposta da API em formato inválido');
+                    const errorMsg = data?.error?.message || 'Erro desconhecido';
+                    throw new Error(errorMsg);
                 }
 
                 const botResponse = data.candidates[0].content.parts[0].text;
                 simulateHumanTyping(botResponse);
 
             } catch (error) {
-                console.error('Erro detalhado:', error);
-                showError(formatErrorMessage(error));
+                console.error('Erro:', error);
+                showError('Ops! Algo deu errado. Vamos tentar de novo?');
             } finally {
                 hideTypingIndicator();
             }
-        }
-
-        function formatErrorMessage(error) {
-            if (error.message.includes('API_KEY')) {
-                return 'Configuração incompleta: Verifique a chave da API';
-            }
-            if (error.message.includes('network')) {
-                return 'Problema de conexão: Verifique sua internet';
-            }
-            return 'Desculpe, tive um probleminha. Podemos tentar novamente?';
         }
 
         function addMessage(text, sender) {
@@ -190,7 +187,7 @@
                 `;
             } else {
                 messageDiv.innerHTML = `
-                    <img src="https://avatars.githubusercontent.com/u/95686401?v=4" class="w-8 h-8 rounded-full mt-1">
+                    <img src="https://avatars.githubusercontent.com/u/79007340?v=4" class="w-8 h-8 rounded-full mt-1">
                     <div class="max-w-[85%]">
                         <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-md border">
                             <p class="text-gray-700">${text.replace(/\n/g, '<br>')}</p>
@@ -198,6 +195,7 @@
                         <span class="text-xs text-gray-400 mt-1 block">${time}</span>
                     </div>
                 `;
+                playNotification();
             }
             
             chatMessages.appendChild(messageDiv);
@@ -208,7 +206,7 @@
             const typingDiv = document.createElement('div');
             typingDiv.className = 'flex gap-2';
             typingDiv.innerHTML = `
-                <img src="https://avatars.githubusercontent.com/u/95686401?v=4" class="w-8 h-8 rounded-full mt-1">
+                <img src="https://avatars.githubusercontent.com/u/79007340?v=4" class="w-8 h-8 rounded-full mt-1">
                 <div class="max-w-[85%]">
                     <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-md border typing-message">
                         <span class="text-transparent">${text}</span>
@@ -220,15 +218,14 @@
             const messageContent = typingDiv.querySelector('.typing-message');
             
             let index = 0;
-            let typingSpeed = 30 + Math.random() * 30;
+            let typingSpeed = BASE_TYPING_SPEED;
 
             function typeCharacter() {
                 if (index < text.length) {
                     messageContent.innerHTML = text.slice(0, index) + '<span class="text-gray-700">|</span>';
                     index++;
+                    typingSpeed = BASE_TYPING_SPEED + Math.random() * RANDOM_SPEED_VARIATION;
                     setTimeout(typeCharacter, typingSpeed);
-                    
-                    if (index % 5 === 0) typingSpeed = 50 + Math.random() * 100;
                 } else {
                     messageContent.innerHTML = text.replace(/\n/g, '<br>');
                     addTimestamp(typingDiv);
@@ -248,12 +245,11 @@
         }
 
         function showTypingIndicator() {
-            typingIndicator.classList.remove('hidden');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            typingStatus.classList.remove('hidden');
         }
 
         function hideTypingIndicator() {
-            typingIndicator.classList.add('hidden');
+            typingStatus.classList.add('hidden');
         }
 
         function showError(message) {
