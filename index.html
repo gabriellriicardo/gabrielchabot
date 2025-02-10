@@ -3,169 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gabriel Ricardo - Chat</title>
+    <title>Chat com Gabriel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Arial, sans-serif;
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1); }
         }
 
-        body {
-            background: #1a1a1a;
-            color: #e0e0e0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+        .typing-dot {
+            animation: pulse 1.2s infinite ease-in-out;
         }
 
-        .header {
-            background: #2d2d2d;
-            padding: 15px;
-            text-align: center;
-            border-bottom: 2px solid #4a90e2;
-        }
-
-        .chat-container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            flex-grow: 1;
-            width: 90%;
-        }
-
-        .chat-messages {
-            background: #252525;
-            border-radius: 10px;
-            padding: 20px;
-            height: 65vh;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        .message {
-            margin: 15px 0;
-            padding: 12px 18px;
-            border-radius: 15px;
-            max-width: 85%;
-            line-height: 1.5;
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        .user-message {
-            background: #3a3a3a;
-            margin-left: auto;
-            border: 1px solid #4a4a4a;
-        }
-
-        .bot-message {
-            background: #2e2e2e;
-            margin-right: auto;
-            border: 1px solid #404040;
-        }
-
-        .input-container {
-            display: flex;
-            gap: 10px;
-            max-width: 800px;
-            margin: 0 auto 20px;
-            width: 90%;
-        }
-
-        input {
-            flex-grow: 1;
-            padding: 12px 20px;
-            border: 1px solid #404040;
-            border-radius: 25px;
-            background: #252525;
-            color: white;
-            font-size: 16px;
-            transition: 0.3s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #4a90e2;
-            box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
-        }
-
-        button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 25px;
-            background: #4a90e2;
-            color: white;
-            cursor: pointer;
-            transition: 0.3s;
-            font-weight: 500;
-        }
-
-        button:hover {
-            background: #357abd;
-            transform: translateY(-1px);
-        }
-
-        .loading {
-            display: none;
-            color: #888;
-            text-align: center;
-            padding: 10px;
-            font-style: italic;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @media (max-width: 768px) {
-            .chat-messages {
-                height: 60vh;
-                padding: 15px;
-            }
-            
-            .message {
-                max-width: 90%;
-                padding: 10px 15px;
-            }
+        .animate-message {
+            animation: slideIn 0.25s ease-out;
         }
     </style>
 </head>
-<body>
-    <div class="header">
-        <h2>Gabriel Ricardo - Chat Pessoal</h2>
-        <p>Natural de Escada-PE • Noivo da Alexsya • IEADPE</p>
-    </div>
+<body class="bg-gray-50 font-['Inter']">
+    <div class="max-w-md mx-auto min-h-screen">
+        <!-- Cabeçalho -->
+        <div class="bg-white p-4 shadow-sm border-b">
+            <div class="flex items-center gap-4">
+                <img src="https://avatars.githubusercontent.com/u/95686401?v=4" class="w-10 h-10 rounded-full border-2 border-purple-100">
+                <div>
+                    <h1 class="font-semibold text-gray-800">Gabriel Ricardo</h1>
+                    <div class="flex items-center gap-2 text-sm text-gray-500">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        <span>Online • Escada-PE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="chat-container">
-        <div class="chat-messages" id="chatMessages">
-            <div class="message bot-message">
-                Olá! Sou o Gabriel. 😊 Como posso ajudar você hoje?<br>
-                <small>(Digite sua mensagem abaixo)</small>
+        <!-- Área de Mensagens -->
+        <div class="p-4 space-y-6 h-[calc(100vh-160px)] overflow-y-auto" id="chatMessages">
+            <!-- Mensagem Inicial -->
+            <div class="flex gap-2 animate-message">
+                <img src="https://avatars.githubusercontent.com/u/95686401?v=4" class="w-8 h-8 rounded-full mt-1">
+                <div class="max-w-[85%]">
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-md border">
+                        <p class="text-gray-700">Olá! 👋 Como posso te ajudar hoje?</p>
+                    </div>
+                    <span class="text-xs text-gray-400 mt-1 block">Agora há pouco</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicador de Digitação -->
+        <div id="typingIndicator" class="hidden px-4 pb-2">
+            <div class="flex items-start gap-2">
+                <img src="https://avatars.githubusercontent.com/u/95686401?v=4" class="w-8 h-8 rounded-full">
+                <div class="bg-white px-4 py-2 rounded-2xl shadow-md border">
+                    <div class="flex items-center gap-2 text-gray-500 text-sm">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot" style="animation-delay: 0.4s"></div>
+                        </div>
+                        <span>Gabriel está digitando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campo de Entrada -->
+        <div class="bg-white p-4 border-t fixed bottom-0 w-full max-w-md">
+            <div class="relative">
+                <input id="userInput" type="text" 
+                       class="w-full pr-14 pl-4 py-3 bg-gray-50 rounded-full border-2 border-gray-200 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-100 placeholder-gray-400"
+                       placeholder="Escreva sua mensagem..."
+                       autocomplete="off">
+                <button onclick="sendMessage()" 
+                        class="absolute right-2 top-2 bg-purple-500 hover:bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
-    
-    <div class="input-container">
-        <input type="text" id="userInput" placeholder="Escreva sua mensagem aqui..." />
-        <button onclick="sendMessage()">Enviar</button>
-    </div>
-    <div class="loading" id="loading">Digitando...</div>
 
     <script>
-        const API_KEY = 'AIzaSyAbW9rQgbja14vDUsXuKnjvl2MalzdYg9E'; // Substituir pela chave real
+        const API_KEY = 'AIzaSyAbW9rQgbja14vDUsXuKnjvl2MalzdYg9E'; // ← Substituir pela chave real
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
-        const loading = document.getElementById('loading');
+        const typingIndicator = document.getElementById('typingIndicator');
 
         async function loadRules() {
             try {
                 const response = await fetch('dados.txt');
+                if (!response.ok) throw new Error('Arquivo de regras não encontrado');
                 return await response.text();
             } catch (error) {
-                console.error('Erro ao carregar dados:', error);
+                console.error('Erro ao carregar regras:', error);
+                showError('Problema ao carregar configurações pessoais');
                 return '';
             }
         }
@@ -176,13 +114,18 @@
 
             addMessage(userMessage, 'user');
             userInput.value = '';
-            loading.style.display = 'block';
+            showTypingIndicator();
 
             try {
+                // Verificações iniciais
+                if (!API_KEY || API_KEY.includes('SUA_API_KEY')) {
+                    throw new Error('Chave de API não configurada');
+                }
+
                 const rules = await loadRules();
                 const chatHistory = getChatHistory();
                 
-                const fullPrompt = `${rules}\n\nContexto Atual:\nData: ${new Date().toLocaleDateString('pt-BR')}\nHora: ${new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}\n\nHistórico:\n${chatHistory}\n\nUsuário: ${userMessage}\nGabriel:`;
+                const fullPrompt = `${rules}\n\nContexto:\n${new Date().toLocaleString('pt-BR')}\nHistórico:\n${chatHistory}\n\nUsuário: ${userMessage}\nGabriel:`;
 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
                     method: 'POST',
@@ -199,36 +142,137 @@
                 });
 
                 const data = await response.json();
-                const botResponse = data.candidates[0].content.parts[0].text;
                 
-                addMessage(botResponse, 'bot');
+                if (!response.ok) {
+                    const errorMsg = data?.error?.message || 'Erro desconhecido da API';
+                    throw new Error(`Erro na API: ${errorMsg}`);
+                }
+
+                if (!data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    throw new Error('Resposta da API em formato inválido');
+                }
+
+                const botResponse = data.candidates[0].content.parts[0].text;
+                simulateHumanTyping(botResponse);
+
             } catch (error) {
-                console.error('Erro:', error);
-                addMessage('Poxa, estou com dificuldades técnicas. Podemos tentar novamente mais tarde?', 'bot');
+                console.error('Erro detalhado:', error);
+                showError(formatErrorMessage(error));
             } finally {
-                loading.style.display = 'none';
+                hideTypingIndicator();
             }
         }
 
+        function formatErrorMessage(error) {
+            if (error.message.includes('API_KEY')) {
+                return 'Configuração incompleta: Verifique a chave da API';
+            }
+            if (error.message.includes('network')) {
+                return 'Problema de conexão: Verifique sua internet';
+            }
+            return 'Desculpe, tive um probleminha. Podemos tentar novamente?';
+        }
+
         function addMessage(text, sender) {
+            const time = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            
             const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', `${sender}-message`);
-            messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+            messageDiv.className = `flex gap-2 ${sender === 'user' ? 'justify-end' : ''} animate-message`;
+            
+            if(sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="max-w-[85%]">
+                        <div class="bg-purple-500 text-white p-3 rounded-2xl rounded-br-none shadow-md">
+                            <p>${text}</p>
+                        </div>
+                        <span class="text-xs text-gray-400 mt-1 block text-right">${time}</span>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <img src="https://avatars.githubusercontent.com/u/95686401?v=4" class="w-8 h-8 rounded-full mt-1">
+                    <div class="max-w-[85%]">
+                        <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-md border">
+                            <p class="text-gray-700">${text.replace(/\n/g, '<br>')}</p>
+                        </div>
+                        <span class="text-xs text-gray-400 mt-1 block">${time}</span>
+                    </div>
+                `;
+            }
+            
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
+        function simulateHumanTyping(text) {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'flex gap-2';
+            typingDiv.innerHTML = `
+                <img src="https://avatars.githubusercontent.com/u/95686401?v=4" class="w-8 h-8 rounded-full mt-1">
+                <div class="max-w-[85%]">
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-md border typing-message">
+                        <span class="text-transparent">${text}</span>
+                    </div>
+                </div>
+            `;
+
+            chatMessages.appendChild(typingDiv);
+            const messageContent = typingDiv.querySelector('.typing-message');
+            
+            let index = 0;
+            let typingSpeed = 30 + Math.random() * 30;
+
+            function typeCharacter() {
+                if (index < text.length) {
+                    messageContent.innerHTML = text.slice(0, index) + '<span class="text-gray-700">|</span>';
+                    index++;
+                    setTimeout(typeCharacter, typingSpeed);
+                    
+                    if (index % 5 === 0) typingSpeed = 50 + Math.random() * 100;
+                } else {
+                    messageContent.innerHTML = text.replace(/\n/g, '<br>');
+                    addTimestamp(typingDiv);
+                }
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            typeCharacter();
+        }
+
+        function addTimestamp(element) {
+            const time = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'text-xs text-gray-400 mt-1 block';
+            timeSpan.textContent = time;
+            element.after(timeSpan);
+        }
+
+        function showTypingIndicator() {
+            typingIndicator.classList.remove('hidden');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            typingIndicator.classList.add('hidden');
+        }
+
+        function showError(message) {
+            addMessage(`<span class="text-red-500">⚠️</span> ${message}`, 'bot');
+        }
+
         function getChatHistory() {
             return Array.from(chatMessages.children)
-                .slice(1) // Ignora a mensagem inicial
+                .filter(msg => !msg.querySelector('.typing-message'))
+                .slice(1)
                 .map(msg => {
-                    return msg.classList.contains('user-message') 
-                        ? `Usuário: ${msg.textContent}` 
-                        : `Gabriel: ${msg.textContent}`;
+                    const isUser = msg.classList.contains('justify-end');
+                    const text = msg.querySelector('p')?.textContent || '';
+                    return isUser ? `Usuário: ${text}` : `Gabriel: ${text}`;
                 })
                 .join('\n');
         }
 
+        // Enviar com Enter
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
